@@ -63,3 +63,38 @@ func DecodeMessage(msg []byte) (string, []byte, error) {
 
 	return baseMessage.Method, content[:contentLength], nil
 }
+
+// Split is a bufio.SplitFunc implementation for processing LSP-style messages.
+// It parses the "Content-Length" header, identifies complete messages, and returns
+// them as tokens. This function ensures the content length matches the header value
+// and handles partial data appropriately.
+//
+// Parameters:
+// - data: A byte slice containing the input data to split.
+// - atEOF: A boolean indicating whether the end of the input has been reached.
+//
+// Returns:
+// - advance: The number of bytes to advance in the input data for the next split.
+// - token: A byte slice containing the complete message, or nil if the message is incomplete.
+// - err: An error if the "Content-Length" header is malformed or parsing fails.
+func Split(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	const op = "Split"
+
+	header, content, found := bytes.Cut(data, []byte{'\r', '\n', '\r', '\n'})
+	if !found {
+		return 0, nil, nil
+	}
+
+	contentLengthBytes := header[len("Content-Length: "):]
+	contentLength, err := strconv.Atoi(string(contentLengthBytes))
+	if err != nil {
+		return 0, nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if len(content) < contentLength {
+		return 0, nil, nil
+	}
+
+	totalLength := len(header) + 4 + contentLength
+	return totalLength, data[:totalLength], nil
+}
