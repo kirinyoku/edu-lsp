@@ -2,7 +2,7 @@ package lsp
 
 type HoverRequest struct {
 	Request
-	HoverParams HoverParams `json:"params"`
+	Params HoverParams `json:"params"`
 }
 
 type HoverParams struct {

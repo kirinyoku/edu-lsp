@@ -32,8 +32,32 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 			ID:  &id,
 			RPC: "2.0",
 		},
+		// FAKE RESPONSE
 		Result: lsp.HoverResult{
 			Contents: fmt.Sprintf("File: %s, Characters: %d", uri, len(document)),
+		},
+	}
+}
+
+func (s *State) Definition(id int, uri string, position lsp.Position) lsp.DefinitionResponse {
+	return lsp.DefinitionResponse{
+		Response: lsp.Response{
+			ID:  &id,
+			RPC: "2.0",
+		},
+		Result: lsp.Location{
+			URI: uri,
+			Range: lsp.Range{
+				// FAKE RESPONSE
+				Start: lsp.Position{
+					Line:      position.Line - 1,
+					Character: 0,
+				},
+				End: lsp.Position{
+					Line:      position.Line - 1,
+					Character: 0,
+				},
+			},
 		},
 	}
 }

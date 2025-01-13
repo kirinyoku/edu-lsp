@@ -80,7 +80,16 @@ func handleMessage(logger *log.Logger, w io.Writer, state analysis.State, method
 			return
 		}
 
-		response := state.Hover(request.ID, request.HoverParams.TextDocument.URI, request.HoverParams.Position)
+		response := state.Hover(request.ID, request.Params.TextDocument.URI, request.Params.Position)
+		writeResponse(w, response)
+	case "textDocument/definition":
+		var request lsp.DefinitionRequest
+		if err := json.Unmarshal(contents, &request); err != nil {
+			logger.Printf("%s: Failed to unmarshal definition request: %v\n", op, err)
+			return
+		}
+
+		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
 		writeResponse(w, response)
 	}
 }
