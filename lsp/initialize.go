@@ -47,6 +47,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
 				TextDocumentSync: 1,
+				HoverProvider:    true,
 			},
 			ServerInfo: ServerInfo{
 				Name:    "edu-lsp",

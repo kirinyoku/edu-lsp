@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 
@@ -19,6 +20,7 @@ func main() {
 	scanner.Split(rpc.Split)
 
 	state := analysis.NewState()
+	writer := os.Stdout
 
 	for scanner.Scan() {
 		msg := scanner.Bytes()
@@ -28,11 +30,11 @@ func main() {
 			continue
 		}
 
-		handleMessage(logger, state, method, contents)
+		handleMessage(logger, writer, state, method, contents)
 	}
 }
 
-func handleMessage(logger *log.Logger, state analysis.State, method string, contents []byte) {
+func handleMessage(logger *log.Logger, w io.Writer, state analysis.State, method string, contents []byte) {
 	const op = "handleMessage"
 
 	logger.Printf("Received message wtih method: %s\n", method)
@@ -48,12 +50,7 @@ func handleMessage(logger *log.Logger, state analysis.State, method string, cont
 		logger.Printf("Conected to: %s %s\n", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 
 		response := lsp.NewInitializeResponse(request.ID)
-		reply := rpc.MustEncodeMessage(response)
-
-		writer := os.Stdout
-		writer.Write([]byte(reply))
-
-		logger.Println("Sent the reply")
+		writeResponse(w, response)
 	case "textDocument/didOpen":
 		var request lsp.DidOpenTextDocumentNotification
 		if err := json.Unmarshal(contents, &request); err != nil {
@@ -76,7 +73,21 @@ func handleMessage(logger *log.Logger, state analysis.State, method string, cont
 		for _, change := range request.Params.ContentChanges {
 			state.UpdateDocument(request.Params.TextDocument.URI, change.Text)
 		}
+	case "textDocument/hover":
+		var request lsp.HoverRequest
+		if err := json.Unmarshal(contents, &request); err != nil {
+			logger.Printf("%s: Failed to unmarshal hover request: %v\n", op, err)
+			return
+		}
+
+		response := state.Hover(request.ID, request.HoverParams.TextDocument.URI, request.HoverParams.Position)
+		writeResponse(w, response)
 	}
+}
+
+func writeResponse(w io.Writer, resp any) {
+	reply := rpc.MustEncodeMessage(resp)
+	w.Write([]byte(reply))
 }
 
 func mustGetLogger(filename string) *log.Logger {
