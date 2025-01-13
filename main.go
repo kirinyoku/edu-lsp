@@ -91,6 +91,15 @@ func handleMessage(logger *log.Logger, w io.Writer, state analysis.State, method
 
 		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
 		writeResponse(w, response)
+	case "textDocument/codeAction":
+		var request lsp.CodeActionRequest
+		if err := json.Unmarshal(contents, &request); err != nil {
+			logger.Printf("%s: Failed to unmarshal code action request: %v\n", op, err)
+			return
+		}
+
+		response := state.TextDocumentCodeAction(request.ID, request.Params.TextDocument.URI)
+		writeResponse(w, response)
 	}
 }
 

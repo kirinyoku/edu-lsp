@@ -49,6 +49,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 				TextDocumentSync:   1,
 				HoverProvider:      true,
 				DefinitionProvider: true,
+				CodeActionProvider: true,
 			},
 			ServerInfo: ServerInfo{
 				Name:    "edu-lsp",
