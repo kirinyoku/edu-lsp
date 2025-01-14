@@ -50,6 +50,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 				HoverProvider:      true,
 				DefinitionProvider: true,
 				CodeActionProvider: true,
+				CompletionProvider: map[string]any{},
 			},
 			ServerInfo: ServerInfo{
 				Name:    "edu-lsp",

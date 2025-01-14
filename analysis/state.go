@@ -109,6 +109,25 @@ func (s *State) TextDocumentCodeAction(id int, uri string) lsp.TextDocumentCodeA
 	return response
 }
 
+func (s *State) TextDocumentCompletion(id int, uri string) lsp.CompletionResponse {
+	items := []lsp.CompletionItem{
+		{
+			Label:         "Neovim",
+			Detail:        "The best editor",
+			Documentation: "Neovim is a hyperextensible text editor based on Vim",
+		},
+	}
+
+	// FAKE RESPONSE
+	return lsp.CompletionResponse{
+		Response: lsp.Response{
+			ID:  &id,
+			RPC: "2.0",
+		},
+		Result: items,
+	}
+}
+
 func LineRange(line, start, end int) lsp.Range {
 	return lsp.Range{
 		Start: lsp.Position{
