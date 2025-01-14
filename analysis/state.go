@@ -17,12 +17,16 @@ func NewState() State {
 	}
 }
 
-func (s *State) OpenDocument(document, text string) {
+func (s *State) OpenDocument(document, text string) []lsp.Diagnostic {
 	s.Documents[document] = text
+
+	return getDiagnosticForFile(text)
 }
 
-func (s *State) UpdateDocument(document, text string) {
+func (s *State) UpdateDocument(document, text string) []lsp.Diagnostic {
 	s.Documents[document] = text
+
+	return getDiagnosticForFile(text)
 }
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
@@ -126,6 +130,23 @@ func (s *State) TextDocumentCompletion(id int, uri string) lsp.CompletionRespons
 		},
 		Result: items,
 	}
+}
+
+func getDiagnosticForFile(text string) []lsp.Diagnostic {
+	diagnostic := []lsp.Diagnostic{}
+
+	for row, line := range strings.Split(text, "\n") {
+		idx := strings.Index(line, "VS Code")
+		if idx >= 0 {
+			diagnostic = append(diagnostic, lsp.Diagnostic{
+				Range:    LineRange(row, idx, idx+len("VS Code")),
+				Severity: 1,
+				Source:   "Common Sense",
+				Message:  "VS Code is not allowed"})
+		}
+	}
+
+	return diagnostic
 }
 
 func LineRange(line, start, end int) lsp.Range {
